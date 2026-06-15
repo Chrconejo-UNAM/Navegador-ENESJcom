@@ -4,9 +4,7 @@
 
 import streamlit as st
 import networkx as nx
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import base64
 
 # Guardar en caché para los logos en Base64
@@ -17,14 +15,6 @@ def cargar_imagen_b64(ruta):
             return base64.b64encode(f.read()).decode()
     except Exception:
         return ""
-
-# Guardar en caché para el mapa de fondo de Matplotlib
-@st.cache_data
-def cargar_fondo_mapa():
-    try:
-        return mpimg.imread('foto_enes(2).webp')
-    except Exception as e:
-        return None
 
 # CONFIGURACIÓN DE PÁGINA
 try:
@@ -56,12 +46,12 @@ st.markdown("""
     
     /* Eliminar margenes blancos de streamlit */
     .block-container, div[data-testid="stAppViewBlockContainer"] {
-        padding-top: 0rem !important; /* Le devolvemos un poquito de espacio arriba */
+        padding-top: 0rem !important;
         padding-bottom: 0rem !important;
         padding-left: 0rem !important;
         padding-right: 0rem !important;
         max-width: 100% !important;
-        margin-top: -1rem !important; /* Quitamos el valor negativo que estaba rompiendo todo */
+        margin-top: -1rem !important;
     }
     
     /* Eliminar por completo el header por defecto de Streamlit */
@@ -85,7 +75,6 @@ st.markdown("""
     }
     
     /* Diseño del título */
-    /* Título para computadoras */
     .header-titulo {
         text-align: center;
         font-weight: bold;
@@ -111,7 +100,6 @@ st.markdown("""
         .header-institucional {
             padding: 10px 5px !important;
         }
-        
     }
 
     /* Estilo del botón principal */
@@ -149,59 +137,35 @@ st.markdown("""
         padding: 0 15px;
     }
             
-    /* Redondear las esquinas del mapa (y ponerle sombra) */
+    /* Redondear las esquinas del mapa */
     [data-testid="stImage"] img {
         border-radius: 20px !important;
-        border: 2px solid var(--unam-gold) !important; /* Le da un contorno dorado muy sutil */
-        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3) !important; /* Sombra para que parezca que flota */
+        border: 2px solid var(--unam-gold) !important;
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3) !important;
     }
             
     /* Redondear los mensajes de alerta */
     [data-testid="stAlert"] {
-        border-radius: 15px !important; /* Esquinas redondeadas */
-        width: 90% !important; /* Deja 5px de margen de cada lado */
-        margin: 0 auto 15px auto !important; /* El 'auto' hace que se centre perfectamente */
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05) !important; /* Sombra ligera y elegante */
+        border-radius: 15px !important;
+        width: 90% !important;
+        margin: 0 auto 15px auto !important;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05) !important;
     }
             
-    /* Agregar margen al mapa (Contenedor de la gráfica) */
+    /* Agregar margen al mapa */
     [data-testid="stImage"] {
-        width: 95% !important; /* Lo encogemos ligeramente (deja 2.5px de cada lado) */
-        margin-left: auto !important; /* Centrado automático */
-        margin-right: auto !important; /* Centrado automático */
-        margin-bottom: 30px !important; /* Espacio extra antes del footer */
+        width: 95% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        margin-bottom: 30px !important;
     }
-            
-    /* Caja temporal de carga */
-    .caja-carga-gris {
-        background-color: #E2E3E5; /* Gris claro y elegante */
-        border-radius: 15px;
-        width: 90%;
-        margin: 0 auto 15px auto;
-        padding: 15px;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
-        text-align: center;
-        color: var(--unam-blue); /* Texto en azul para que resalte */
-        font-weight: bold;
-        font-size: 16px;
-    }
-    
     </style>
     """, unsafe_allow_html=True)
-
-# Función para cargar imágenes y usarlas con HTML
-def cargar_imagen_b64(ruta):
-    try:
-        with open(ruta, "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    except Exception:
-        return ""
 
 # ENCABEZADO CON LOGOS (Cinta Azul)
 img_unam = cargar_imagen_b64("logo_unam_dorado_1.png")
 img_enes = cargar_imagen_b64("logo_enes_dorado.png")
 
-# Construimos el HTML del encabezado CON ENLACES
 html_header = f"""
 <div class="header-institucional">
     <div style="width: 25%; text-align: left;">
@@ -221,7 +185,6 @@ html_header = f"""
 """
 st.markdown(html_header, unsafe_allow_html=True)
 
-# Creamos un div contenedor virtual para darle margen a las instrucciones
 st.markdown('<div class="contenido-principal">', unsafe_allow_html=True)
 
 # GENERACIÓN DEL GRAFO Y COORDENADAS DE LOS NODOS
@@ -328,7 +291,6 @@ pos = {
     'Paneles solares': (0, 3.7),
     'Jardineras': (20, 3.9), 'Gym al aire libre': (39, 3.9),
     'Baños 1 piso 5': (9, 3.85), 'Baños 2 piso 5': (31, 4.2)
-
     }
 
 directorio_profes = {
@@ -375,7 +337,7 @@ sep_docentes = "👨‍🏫 --- DOCENTES ---"
 # Listas pre-calculadas 
 nodos_ordenados = sorted(list(G.nodes()))
 profes_ordenados = sorted(list(directorio_profes.keys()))
-opciones_destino = opciones_destino = [sep_aulas] + nodos_ordenados + [sep_docentes] + profes_ordenados
+opciones_destino = [sep_aulas] + nodos_ordenados + [sep_docentes] + profes_ordenados
 
 # Cajas a ancho completo
 origen = st.selectbox("📍 Estás en:", nodos_ordenados)
@@ -386,97 +348,106 @@ st.markdown("<br>", unsafe_allow_html=True)
 # Botón a ancho completo
 boton_trazar = st.button("Trazar Ruta", use_container_width=True)
 
-# DIBUJO DEL GRAFO CON MATPLOTLIB
+# LÓGICA DE DIBUJO
 if boton_trazar:
     # Validamos que no elijan los separadores
     if seleccion == sep_aulas or seleccion == sep_docentes:
         st.warning("⚠️ Por favor, selecciona un destino válido debajo de los separadores.")
-    
     else:
         destino_real = directorio_profes.get(seleccion, seleccion)
         
-        caja_carga = st.empty() 
-        caja_carga.markdown('<div class="caja-carga-gris">⏳ Dibujando la mejor ruta...</div>', unsafe_allow_html=True)
-            
         try:
-            ruta = nx.dijkstra_path(G, source=origen, target=destino_real, weight='weight')
-            distancia = nx.dijkstra_path_length(G, source=origen, target=destino_real, weight='weight')
+            # Implementación rápida de Dijkstra
+            distancia, ruta = nx.bidirectional_dijkstra(G, source=origen, target=destino_real, weight='weight')
     
-            st.success(f"✅ ¡Ruta Encontrada! Distancia: {distancia} metros")
+            st.success(f"✅ ¡Ruta Encontrada! Distancia aproximada: {distancia} metros")
             st.info(f"🧭 **Camino a seguir:** {' ➔ '.join(ruta)}")
 
-            fig, ax = plt.subplots(figsize=(16, 9)) 
-            fig.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0, hspace=0)
-            ax.margins(0, 0)
+            # --- DIBUJO INSTANTÁNEO CON PILLOW ---
+            # 1. Cargar la imagen base
+            img = Image.open('foto_enes(2).webp').convert('RGBA')
             
-            fig.patch.set_facecolor('none')
-            ax.set_facecolor('none')
-            
-            izq, der, abajo, arriba = -8, 54, -1.5, 6
-            
-            try:
-                img = cargar_fondo_mapa() 
-                if img is not None:
-                    ax.imshow(img, extent=[izq, der, abajo, arriba], aspect='auto', alpha=0.9)
-                else:
-                    st.warning("No se pudo cargar la imagen de fondo.")
-            except Exception as e:
-                st.warning(f"Error al cargar imagen: {e}")
-            
-            # Dibujar solo las aristas de la ruta calculada
-            edges_ruta = list(zip(ruta, ruta[1:]))
-            nx.draw_networkx_edges(G, pos, edgelist=edges_ruta, edge_color='#D4A106', width=6, ax=ax)
-            
-            # Dibujar puntos blancos en los pasos intermedios
+            # Crear una capa transparente del mismo tamaño para dibujar la ruta
+            capa_ruta = Image.new('RGBA', img.size, (255, 255, 255, 0))
+            draw = ImageDraw.Draw(capa_ruta)
+
+            W, H = img.size
+
+            # 2. Función traductora: Convierte las coordenadas del grafo a píxeles de tu foto
+            def a_pixeles(x, y):
+                # Según tus límites originales de Matplotlib
+                px_x = int(((x - (-8)) / 62) * W)
+                px_y = int(H - (((y - (-1.5)) / 7.5) * H))
+                return px_x, px_y
+
+            # 3. Dibujar las líneas de la ruta
+            for u, v in zip(ruta, ruta[1:]):
+                x1, y1 = a_pixeles(pos[u][0], pos[u][1])
+                x2, y2 = a_pixeles(pos[v][0], pos[v][1])
+                # Ajusta el grosor según te parezca mejor (15 es buen punto de partida para fotos grandes)
+                draw.line([(x1, y1), (x2, y2)], fill="#D4A106", width=15)
+
+            # 4. Dibujar los puntos blancos intermedios
             nodos_intermedios = ruta[1:-1]
-            if nodos_intermedios:
-                nx.draw_networkx_nodes(G, pos, nodelist=nodos_intermedios, node_color='white', node_size=120, edgecolors='#002B5C', linewidths=1.5, ax=ax)
-            
-            # Dibujar los círculos grandes para el Origen y el Destino final
-            nx.draw_networkx_nodes(G, pos, nodelist=[origen], node_color='#002B5C', node_size=600, edgecolors='white', linewidths=2, ax=ax)
-            nx.draw_networkx_nodes(G, pos, nodelist=[destino_real], node_color='#D4A106', node_size=600, edgecolors='white', linewidths=2, ax=ax)
+            radio_int = 8
+            for nodo in nodos_intermedios:
+                px, py = a_pixeles(pos[nodo][0], pos[nodo][1])
+                draw.ellipse([(px - radio_int, py - radio_int), (px + radio_int, py + radio_int)], 
+                             fill="white", outline="#002B5C", width=4)
 
-            # Letreros de inicio y destino
-            pos_labels = {
-                origen: (pos[origen][0], pos[origen][1] - 0.25),
-                destino_real: (pos[destino_real][0], pos[destino_real][1] - 0.25)
-            }
-            
-            if origen == destino_real:
-                textos_nodos = {origen: f"📍🎯 ¡Ya estás aquí!: {origen}"}
-            else:
-                textos_nodos = {
-                    origen: f"Inicio: {origen}",
-                    destino_real: f"Destino: {seleccion}"
-                   }
-            
-            nx.draw_networkx_labels(G, pos_labels, labels=textos_nodos, 
-                                   font_size=11, font_color='white', font_weight='bold', 
-                                   bbox=dict(facecolor='#002B5C', edgecolor='none', alpha=0.8, pad=2, boxstyle="round,pad=0.3"), 
-                                   ax=ax)
+            # 5. Configurar la fuente para los letreros
+            # Pillow intenta buscar una fuente instalada en el sistema. 
+            # Si estás en Windows usa Arial, en servidores web usa una libre, si falla usa la básica.
+            try:
+                fuente = ImageFont.truetype("arial.ttf", 36)
+            except IOError:
+                try:
+                    fuente = ImageFont.truetype("DejaVuSans.ttf", 36)
+                except IOError:
+                    try:
+                        # Fallback moderno para versiones nuevas de Pillow
+                        fuente = ImageFont.load_default(size=36)
+                    except:
+                        # Fallback clásico
+                        fuente = ImageFont.load_default()
 
-            # Bloquear cámara al tamaño de la foto
-            ax.set_xlim([izq, der])
-            ax.set_ylim([abajo, arriba])
-            plt.axis('off') 
+            # 6. Dibujar nodo de Origen (Azul) y Letrero
+            px_orig, py_orig = a_pixeles(pos[origen][0], pos[origen][1])
+            radio_ext = 22
+            draw.ellipse([(px_orig - radio_ext, py_orig - radio_ext), (px_orig + radio_ext, py_orig + radio_ext)], 
+                         fill="#002B5C", outline="white", width=6)
             
-            # Lanzar la imagen a la pantalla y limpiar memoria
-            st.pyplot(fig, clear_figure=True, use_container_width=True)
-            plt.close(fig)
+            # Letrero de Origen
+            texto_inicio = f"📍 Inicio: {origen}"
+            draw.text((px_orig, py_orig - 40), texto_inicio, fill="white", font=fuente, anchor="ms", 
+                      stroke_width=4, stroke_fill="#002B5C")
 
-            caja_carga.empty()
+            # 7. Dibujar nodo de Destino (Dorado) y Letrero
+            px_dest, py_dest = a_pixeles(pos[destino_real][0], pos[destino_real][1])
+            draw.ellipse([(px_dest - radio_ext, py_dest - radio_ext), (px_dest + radio_ext, py_dest + radio_ext)], 
+                         fill="#D4A106", outline="white", width=6)
             
+            # Letrero de Destino
+            texto_destino = f"🎯 Destino: {seleccion}"
+            draw.text((px_dest, py_dest - 40), texto_destino, fill="white", font=fuente, anchor="ms", 
+                      stroke_width=4, stroke_fill="#D4A106")
+
+            # 8. Combinar la foto original con la ruta dibujada
+            img_final = Image.alpha_composite(img, capa_ruta)
+
+            # 9. Mostrar en pantalla
+            st.image(img_final, use_container_width=True)
+
         except nx.NetworkXNoPath:
-                st.error("❌ No se encontró una ruta válida entre estos dos puntos.")
+            st.error("❌ No se encontró una ruta válida entre estos dos puntos.")
         except Exception as e:
-                st.error(f"❌ Error al procesar: {e}")
+            st.error(f"❌ Error al procesar: {e}")
 
 else:
     # MAPA INICIAL ESTÁTICO
     st.info("👆 Selecciona tu ubicación y destino arriba para trazar la ruta.")
     
     try:
-        # Carga directamente la imagen
         st.image("mapa_guia.png", use_container_width=True)
     except Exception as e:
         st.warning(f"❌ Error al cargar el mapa guía: {e}")
