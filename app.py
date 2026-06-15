@@ -22,7 +22,7 @@ def cargar_imagen_b64(ruta):
 @st.cache_data
 def cargar_fondo_mapa():
     try:
-        return mpimg.imread('foto_enes (1).png')
+        return mpimg.imread('foto_enes(2).webp')
     except Exception as e:
         return None
 
